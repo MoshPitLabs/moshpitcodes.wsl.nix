@@ -4,7 +4,7 @@ _final: prev: {
       substituteInPlace src/main.rs \
         --replace-fail \
           '.env("XDG_RUNTIME_DIR", runtime_path)' \
-          '.env("DBUS_SESSION_BUS_ADDRESS", format!("unix:path={runtime_path}/bus"))
+          '.env("DBUS_SESSION_BUS_ADDRESS", format!("unix:path={}/bus", runtime_path.display()))
                     .env("XDG_RUNTIME_DIR", runtime_path)'
     '';
   });
