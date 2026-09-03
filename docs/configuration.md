@@ -104,6 +104,35 @@ can self-update. API keys (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`,
 the `*-doppler` aliases. Removing an agent is a one-line deletion in the
 `imports` list of `coding-agents/default.nix`.
 
+### MCP servers
+
+`coding-agents/mcp-servers.nix` is the single source of truth: plain data, not a
+module. Each agent module imports it and renders it into that agent's own
+format, so a server is declared once and reaches every agent.
+
+Two of the three take MCP servers from a JSON file; Codex cannot, because its
+config is TOML:
+
+| Agent | Surface | Why |
+| --- | --- | --- |
+| Claude Code | `~/.claude/skills/mcp-servers/.mcp.json` | A directory under `~/.claude/skills/` holding a `.claude-plugin/plugin.json` loads automatically — personal scope, every project, no marketplace, install step, or trust gate. `mcpServers` is not a valid key in `settings.json`, and user scope lives in `~/.claude.json`, which is mutable state Home Manager must not own. |
+| OpenCode | `~/.config/opencode/config.json` | The global config is entirely Nix-generated — no mutable state to preserve — so the `mcp` key just lives alongside model and theme. |
+| Codex | `-c mcp_servers.<name>.url=…` in the wrapper | Config is TOML, and `~/.codex/config.toml` is mutable state — it records per-project `trust_level` decisions. Owning it would wipe them. |
+
+Authentication is deliberately **not** declarative. These servers use OAuth 2.1
+with dynamic client registration, and the Nix store is world-readable, so no
+token belongs in any file here. Each agent needs a one-time interactive login,
+after which tokens persist in that agent's own credential store:
+
+```bash
+claude mcp login linear      # or /mcp inside a session
+opencode mcp auth linear     # tokens: ~/.local/share/opencode/mcp-auth.json
+codex mcp login linear       # tokens: ~/.codex/auth.json
+```
+
+Adding a server means one entry in `mcp-servers.nix` and a rebuild — all three
+agents pick it up.
+
 ## NAS mount (`modules/core/nas-mount.nix`, `modules/core/samba.nix`)
 
 The UGREEN NAS is mounted lazily at `/mnt/ugreen-nas` via CIFS, ported from the

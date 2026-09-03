@@ -223,6 +223,7 @@ Development Tools
 
 - **Nix Dev Environment**: Reproducible shell via `nix develop`
 - **AI Coding Agents**: Claude Code, Codex, OpenCode, Kiro, Kilo Code, and Pi, each wired to `customsecrets.apiKeys`, plus T3 Code (a web GUI over them)
+- **Shared MCP Servers**: declared once in `coding-agents/mcp-servers.nix` and rendered into Claude Code, OpenCode, and Codex; auth stays interactive (OAuth), see [docs/configuration.md](docs/configuration.md#mcp-servers)
 - **Full DevOps Stack**: kubectl, terraform, ansible, Docker Compose, and more
 
 </details>
