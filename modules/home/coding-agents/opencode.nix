@@ -1,7 +1,14 @@
 # ANTHROPIC_API_KEY / OPENROUTER_API_KEY are injected by coding-agents/default.nix.
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 let
+  mcpServers = import ./mcp-servers.nix;
+
+  # opencode merges every config source rather than replacing, so OPENCODE_CONFIG
+  # can point at an MCP-only file and config.json keeps owning model/theme. Set
+  # in the wrapper rather than home.sessionVariables so it holds however opencode
+  # is launched, and left overridable for one-off runs.
   opencode = pkgs.writeShellScriptBin "opencode" ''
+    export OPENCODE_CONFIG="''${OPENCODE_CONFIG:-$HOME/.config/opencode/mcp.json}"
     exec ${pkgs.nodejs}/bin/npx -y opencode-ai@latest "$@"
   '';
 in
@@ -27,6 +34,18 @@ in
         ".opencode/logs/**"
         ".opencode/data/**"
       ];
+    };
+
+    # Dedicated MCP config, merged in via OPENCODE_CONFIG. opencode speaks
+    # streamable HTTP natively and handles the OAuth dance itself (dynamic
+    # client registration), so no credentials belong here.
+    ".config/opencode/mcp.json".text = builtins.toJSON {
+      "$schema" = "https://opencode.ai/config.json";
+      mcp = lib.mapAttrs (_: server: {
+        type = "remote";
+        inherit (server) url;
+        enabled = true;
+      }) mcpServers;
     };
   };
 
