@@ -74,6 +74,10 @@
         lualine = {
           enable = true;
           theme = "auto";
+          integrations.breadcrumbs = {
+            nvim-navic.enable = false;
+            navbuddy.enable = false;
+          };
         };
       };
 
@@ -152,10 +156,6 @@
         };
         colorizer.enable = true;
         illuminate.enable = true;
-        breadcrumbs = {
-          enable = false;
-          navbuddy.enable = false;
-        };
         smartcolumn = {
           enable = true;
         };

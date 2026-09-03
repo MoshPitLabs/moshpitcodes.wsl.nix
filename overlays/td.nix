@@ -1,10 +1,11 @@
 { inputs }:
 _final: prev: {
-  td = prev.buildGoModule rec {
+  # td >= 0.6x requires Go 1.27; nixpkgs' default buildGoModule is still on 1.26.
+  td = (prev.buildGoModule.override { go = prev.go_1_27; }) rec {
     pname = "td";
     # Keep in sync with the `td` input tag in flake.nix; a bump also needs a
     # new vendorHash.
-    version = "0.51.0";
+    version = "0.65.0";
 
     src = inputs.td;
     proxyVendor = true;

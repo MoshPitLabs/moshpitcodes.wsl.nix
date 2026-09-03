@@ -24,12 +24,12 @@
     };
 
     sidecar = {
-      url = "github:marcus/sidecar/v0.86.0";
+      url = "github:marcus/sidecar/v1.13.0";
       flake = false;
     };
 
     td = {
-      url = "github:marcus/td/v0.51.0";
+      url = "github:marcus/td/v0.65.0";
       flake = false;
     };
 
@@ -143,12 +143,12 @@
               git
               just
               nil
-              nixfmt-rfc-style
+              nixfmt
             ];
           };
         }
       );
 
-      formatter = forEachSystem (system: nixpkgs.legacyPackages.${system}.nixfmt-rfc-style);
+      formatter = forEachSystem (system: nixpkgs.legacyPackages.${system}.nixfmt);
     };
 }
