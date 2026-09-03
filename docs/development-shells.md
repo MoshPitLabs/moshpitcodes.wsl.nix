@@ -12,27 +12,28 @@ nix develop .#default
 ```
 
 **Features:**
-- Nix toolchain (`nil`, `nixfmt-rfc-style`)
+- Nix toolchain (`nil`, `nixfmt`)
 - Version control (`git`, `just`)
-- The formatter `nixfmt-rfc-style` (matches `formatter` in `flake.nix` and
+- The formatter `nixfmt` (matches `formatter` in `flake.nix` and
   `treefmt.toml`)
 
 ## Formatting
 
-The repository formatter is `nixfmt-rfc-style` (NOT plain `nixfmt`). Format the
-whole tree with:
+The repository formatter is `nixfmt`, which implements RFC 166 style. The old
+`nixfmt-rfc-style` attribute is now a deprecated alias for it. Format the whole
+tree with:
 
 ```bash
 nix fmt                # uses flake.nix `formatter`
 # or
-treefmt                # uses treefmt.toml (also nixfmt-rfc-style)
+treefmt                # uses treefmt.toml (also nixfmt)
 ```
 
 `treefmt.toml` is configured as:
 
 ```toml
 [formatter.nix]
-command = "nixfmt-rfc-style"
+command = "nixfmt"
 includes = ["*.nix"]
 ```
 
@@ -77,5 +78,5 @@ nix develop --command echo ok           # smoke-test the dev shell
 ## Linting
 
 CI (`.github/workflows/test-flake.yml`) runs `statix check`, `deadnix --fail`,
-and a `nixfmt-rfc-style --check` pass on every PR — `just lint` and `just fmt`
+and a `nixfmt --check` pass on every PR — `just lint` and `just fmt`
 run the same tools locally.

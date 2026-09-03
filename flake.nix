@@ -143,12 +143,12 @@
               git
               just
               nil
-              nixfmt-rfc-style
+              nixfmt
             ];
           };
         }
       );
 
-      formatter = forEachSystem (system: nixpkgs.legacyPackages.${system}.nixfmt-rfc-style);
+      formatter = forEachSystem (system: nixpkgs.legacyPackages.${system}.nixfmt);
     };
 }
