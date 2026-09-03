@@ -110,13 +110,13 @@ the `*-doppler` aliases. Removing an agent is a one-line deletion in the
 module. Each agent module imports it and renders it into that agent's own
 format, so a server is declared once and reaches every agent.
 
-Two of the three get a dedicated MCP JSON file; Codex cannot, because its config
-is TOML:
+Two of the three take MCP servers from a JSON file; Codex cannot, because its
+config is TOML:
 
 | Agent | Surface | Why |
 | --- | --- | --- |
 | Claude Code | `~/.claude/skills/mcp-servers/.mcp.json` | A directory under `~/.claude/skills/` holding a `.claude-plugin/plugin.json` loads automatically — personal scope, every project, no marketplace, install step, or trust gate. `mcpServers` is not a valid key in `settings.json`, and user scope lives in `~/.claude.json`, which is mutable state Home Manager must not own. |
-| OpenCode | `~/.config/opencode/mcp.json` | Config sources are merged, not replaced, so `OPENCODE_CONFIG` (exported by the wrapper) points at an MCP-only file while `config.json` keeps owning model and theme. |
+| OpenCode | `~/.config/opencode/config.json` | The global config is entirely Nix-generated — no mutable state to preserve — so the `mcp` key just lives alongside model and theme. |
 | Codex | `-c mcp_servers.<name>.url=…` in the wrapper | Config is TOML, and `~/.codex/config.toml` is mutable state — it records per-project `trust_level` decisions. Owning it would wipe them. |
 
 Authentication is deliberately **not** declarative. These servers use OAuth 2.1
