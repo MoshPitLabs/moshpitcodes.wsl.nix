@@ -41,7 +41,6 @@
     tfsec
     typescript
     uv
-    worktrunk
     zellij
     zig
   ];

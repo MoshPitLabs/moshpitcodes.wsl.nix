@@ -61,7 +61,7 @@ NixOS configuration for WSL2 on Windows 11. This follows the same broad shape as
 - [./modules/](modules) Modularized NixOS configurations
   - [../core/](modules/core) System level: Nix settings, WSL integration, user, Docker, NAS/Samba, and a minimal root bootstrap package set
   - [../home/](modules/home) [Home Manager](https://github.com/nix-community/home-manager): shell, Git, SSH, tmux, editor, coding agents, and all user-facing packages (single source of truth — nothing is duplicated at the system level)
-- [./overlays/](overlays) Nixpkgs overlays (`sidecar`, `td`, `terraform`, `worktrunk`, `cpplint`, `switch-to-configuration`)
+- [./overlays/](overlays) Nixpkgs overlays (`sidecar`, `td`, `terraform`, `cpplint`, `switch-to-configuration`)
 - [./docs/](docs) Project documentation
 - [./justfile](justfile) Repo tasks (`just rebuild` / `test` / `build` / `update` / `fmt` / `lint` / `check`)
 - [./secrets.nix.example](secrets.nix.example) Local secrets template
@@ -95,7 +95,7 @@ NixOS configuration for WSL2 on Windows 11. This follows the same broad shape as
 ```mermaid
 flowchart TD
     flake["flake.nix"]
-    inputs["<b>inputs</b><br/>nixpkgs (unstable) · home-manager<br/>nixos-wsl · nvf · yazi-plugins<br/>sidecar · td · worktrunk"]
+    inputs["<b>inputs</b><br/>nixpkgs (unstable) · home-manager<br/>nixos-wsl · nvf · yazi-plugins<br/>sidecar · td"]
     wsl["<b>outputs</b><br/>nixosConfigurations.wsl"]
     args["<b>specialArgs</b><br/>customsecrets · inputs · host · username"]
     core["<b>modules/core</b><br/>nix · wsl · system · user<br/>docker · samba · nas-mount · packages"]

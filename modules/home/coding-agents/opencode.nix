@@ -4,7 +4,7 @@ let
   mcpServers = import ./mcp-servers.nix;
 
   opencode = pkgs.writeShellScriptBin "opencode" ''
-    exec ${pkgs.nodejs}/bin/npx -y opencode-ai@latest "$@"
+    exec ${pkgs.nodejs}/bin/npx -y @opencode/cli@2 "$@"
   '';
 in
 {
@@ -20,11 +20,10 @@ in
     ".config/opencode/themes/.gitkeep".text = "";
     ".config/opencode/tools/.gitkeep".text = "";
 
-    ".config/opencode/config.json".text = builtins.toJSON {
+    ".config/opencode/opencode.json".text = builtins.toJSON {
       "$schema" = "https://opencode.ai/config.json";
       model = "openrouter/openai/gpt-5.2";
-      theme = "rosepine";
-      autoupdate = false;
+      update = "disable";
       watcher.ignore = [
         ".opencode/logs/**"
         ".opencode/data/**"
@@ -32,10 +31,10 @@ in
 
       # opencode speaks streamable HTTP natively and handles the OAuth dance
       # itself (dynamic client registration), so no credentials belong here.
-      mcp = lib.mapAttrs (_: server: {
+      mcp.servers = lib.mapAttrs (_: server: {
         type = "remote";
         inherit (server) url;
-        enabled = true;
+        disabled = false;
       }) mcpServers;
     };
   };

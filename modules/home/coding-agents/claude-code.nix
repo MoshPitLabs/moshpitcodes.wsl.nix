@@ -15,6 +15,18 @@ let
   # every project, no marketplace, no install step, no trust gate. That makes it
   # the one fully declarative global surface for MCP in Claude Code.
   pluginDir = ".claude/skills/mcp-servers";
+
+  # Status line for every project: model | repo:branch* or path | context | cost | +/- lines.
+  statusline = pkgs.writeShellScript "claude-statusline" ''
+    export PATH=${
+      lib.makeBinPath [
+        pkgs.jq
+        pkgs.git
+        pkgs.coreutils
+      ]
+    }:$PATH
+    ${builtins.readFile ./claude-statusline.sh}
+  '';
 in
 {
   home = {
@@ -45,6 +57,11 @@ in
               "Edit(**/secrets.nix)"
               "Edit(**/credentials.json)"
             ];
+          };
+          statusLine = {
+            type = "command";
+            command = "${statusline}";
+            padding = 0;
           };
         };
       };

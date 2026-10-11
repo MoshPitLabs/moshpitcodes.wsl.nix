@@ -13,6 +13,10 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
+    # Last nixpkgs-unstable with Blender 4.5 LTS, the version Enfusion Blender
+    # Tools target; it does not load on Blender 5.x (see modules/home/blender.nix).
+    nixpkgs-blender.url = "github:NixOS/nixpkgs/9096a6de6613138f94b809bc0408ffd7d4a1817c";
+
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -31,11 +35,6 @@
     td = {
       url = "github:marcus/td/v0.65.0";
       flake = false;
-    };
-
-    worktrunk = {
-      url = "github:max-sixty/worktrunk";
-      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     nvf = {

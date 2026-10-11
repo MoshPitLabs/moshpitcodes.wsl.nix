@@ -5,5 +5,4 @@
   (import ./sidecar.nix { inherit inputs; })
   (import ./td.nix { inherit inputs; })
   (import ./terraform.nix)
-  (import ./worktrunk.nix { inherit inputs; })
 ]

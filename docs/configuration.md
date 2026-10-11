@@ -12,8 +12,8 @@ modules/core/        # system-level: nix, wsl, system (locale/tz), user, docker,
                      # nas-mount/samba, and a minimal root bootstrap package set
 modules/home/        # Home Manager: shell, zsh, editor, agents, theme, and ALL
                      # user-facing packages (dev.nix, packages.nix, language-servers.nix)
-overlays/            # local package overlays (sidecar, td, terraform, worktrunk,
-                     # cpplint, switch-to-configuration)
+overlays/            # local package overlays (sidecar, td, terraform, cpplint,
+                     # switch-to-configuration)
 justfile             # repo tasks: rebuild / test / build / update / fmt / lint / check
 secrets.nix.example  # secret template (copy to secrets.nix)
 ```
@@ -116,7 +116,7 @@ config is TOML:
 | Agent | Surface | Why |
 | --- | --- | --- |
 | Claude Code | `~/.claude/skills/mcp-servers/.mcp.json` | A directory under `~/.claude/skills/` holding a `.claude-plugin/plugin.json` loads automatically — personal scope, every project, no marketplace, install step, or trust gate. `mcpServers` is not a valid key in `settings.json`, and user scope lives in `~/.claude.json`, which is mutable state Home Manager must not own. |
-| OpenCode | `~/.config/opencode/config.json` | The global config is entirely Nix-generated — no mutable state to preserve — so the `mcp` key just lives alongside model and theme. |
+| OpenCode | `~/.config/opencode/opencode.json` | The global server config is entirely Nix-generated, while terminal client settings such as the theme live in `~/.config/opencode/cli.json`, which opencode writes itself and Home Manager leaves alone. |
 | Codex | `-c mcp_servers.<name>.url=…` in the wrapper | Config is TOML, and `~/.codex/config.toml` is mutable state — it records per-project `trust_level` decisions. Owning it would wipe them. |
 
 Authentication is deliberately **not** declarative. These servers use OAuth 2.1
@@ -177,7 +177,6 @@ A missing `secrets.nix` fails evaluation entirely (see SECRETS.md).
 - `sidecar`, `td` — Go CLIs built from pinned flake inputs (bumping means
   updating the input tag in `flake.nix` *and* the overlay's `version` +
   `vendorHash`)
-- `worktrunk` — re-exported from its flake input
 - `terraform` — pins an official binary release ahead of nixpkgs; delete once
   nixpkgs catches up
 - `cpplint` — skips a broken upstream test suite
