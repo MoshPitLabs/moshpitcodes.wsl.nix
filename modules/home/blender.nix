@@ -59,13 +59,35 @@ let
   # `pip install`, whose manylinux wheels would not load on NixOS anyway.
   # The wrapper names its binary and .desktop entry after pname
   # ("blender-wrapped" by default); keep the usual `blender` command.
-  blender =
+  blenderWithPackages =
     (pkgsBlender.blender.withPackages (ps: [
       (pyside6 ps)
       ps.shiboken6
       (vhacdx ps)
     ])).overrideAttrs
       { pname = "blender"; };
+
+  # /run/opengl-driver carries the system Mesa, built against a newer glibc than
+  # this pinned Blender, so libglvnd cannot load it and Blender segfaults with
+  # no GL context. Use the Mesa from the same nixpkgs instead. Under WSLg only
+  # X11 (XWayland) + llvmpipe yields a working context: Wayland EGL rejects it
+  # and the d3d12 Gallium driver crashes.
+  mesa = pkgsBlender.mesa;
+  blender = pkgs.symlinkJoin {
+    name = "blender-${pkgsBlender.blender.version}";
+    paths = [ blenderWithPackages ];
+    nativeBuildInputs = [ pkgs.makeWrapper ];
+    postBuild = ''
+      wrapProgram $out/bin/blender \
+        --unset WAYLAND_DISPLAY \
+        --set GALLIUM_DRIVER llvmpipe \
+        --set __GLX_VENDOR_LIBRARY_NAME mesa \
+        --set __EGL_VENDOR_LIBRARY_FILENAMES ${mesa}/share/glvnd/egl_vendor.d/50_mesa.json \
+        --set LIBGL_DRIVERS_PATH ${mesa}/lib/dri \
+        --set GBM_BACKENDS_PATH ${mesa}/lib/gbm \
+        --prefix LD_LIBRARY_PATH : ${mesa}/lib
+    '';
+  };
 
   blenderVersion = lib.versions.majorMinor pkgsBlender.blender.version;
 in
