@@ -105,22 +105,6 @@
         "type": "github"
       }
     },
-    "nixpkgs-blender": {
-      "locked": {
-        "lastModified": 1761606745,
-        "narHash": "sha256-uDX54i7p66wYBMqD0yEZHfZCeV2beDOKfoh+RgoD+Lk=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "9096a6de6613138f94b809bc0408ffd7d4a1817c",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "9096a6de6613138f94b809bc0408ffd7d4a1817c",
-        "type": "github"
-      }
-    },
     "nvf": {
       "inputs": {
         "flake-compat": "flake-compat_2",
@@ -148,7 +132,6 @@
         "home-manager": "home-manager",
         "nixos-wsl": "nixos-wsl",
         "nixpkgs": "nixpkgs",
-        "nixpkgs-blender": "nixpkgs-blender",
         "nvf": "nvf",
         "sidecar": "sidecar",
         "td": "td",

@@ -9,7 +9,6 @@
     ./btop.nix
     ./coding-agents
     ./backup-repos.nix
-    ./blender.nix
     ./dev.nix
     ./fzf.nix
     ./git.nix
