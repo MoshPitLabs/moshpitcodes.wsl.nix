@@ -70,7 +70,6 @@
 
       # Custom CLI overlays (see overlays/).
       sidecar
-      worktrunk
     ]
     ++ lib.optionals (pkgs ? ffsend) [ ffsend ]
     ++ lib.optionals (pkgs ? proton-vpn-cli) [ proton-vpn-cli ]
