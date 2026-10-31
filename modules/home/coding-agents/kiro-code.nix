@@ -8,7 +8,17 @@
   lib,
   ...
 }:
+let
+  mcpServers = import ./mcp-servers.nix;
+in
 {
+  home.file.".kiro/settings/mcp.json".text = builtins.toJSON {
+    mcpServers = lib.mapAttrs (_: server: {
+      inherit (server) url;
+      disabled = false;
+    }) mcpServers;
+  };
+
   # Install Kiro CLI via native installer if not already present.
   # Current upstream installer places binaries in ~/.local/bin.
   # We inject Nix store paths into PATH so the installer script can

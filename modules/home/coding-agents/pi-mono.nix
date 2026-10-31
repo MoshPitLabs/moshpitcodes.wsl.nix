@@ -5,6 +5,8 @@
 # provided by coding-agents/default.nix.
 { pkgs, ... }:
 let
+  mcpServers = import ./mcp-servers.nix;
+
   pi = pkgs.writeShellScriptBin "pi" ''
     exec ${pkgs.nodejs}/bin/npx -y @earendil-works/pi-coding-agent@latest "$@"
   '';
@@ -20,6 +22,10 @@ in
 
     # Pi config directory structure
     file.".pi/agent/.gitkeep".text = "";
+    # Current Pi has built-in Streamable HTTP and OAuth support.
+    file.".pi/agent/mcp.json".text = builtins.toJSON {
+      inherit mcpServers;
+    };
   };
 
   # Shell aliases

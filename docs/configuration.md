@@ -95,7 +95,7 @@ them from the environment at runtime (Doppler aliases) when not baked in.
 
 ## Coding agents (`modules/home/coding-agents/`)
 
-Claude Code, Codex, Kilo, Kiro, OpenCode, Pi, agent-browser (Playwright), and
+Claude Code, Codex, Kilo, Kiro, OpenCode, Pi, Antigravity, agent-browser (Playwright), and
 T3 Code (a web GUI over the CLI agents — `t3`, no key of its own).
 Most install themselves on first activation via native/npm installers so they
 can self-update. API keys (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`,
@@ -110,28 +110,48 @@ the `*-doppler` aliases. Removing an agent is a one-line deletion in the
 module. Each agent module imports it and renders it into that agent's own
 format, so a server is declared once and reaches every agent.
 
-Two of the three take MCP servers from a JSON file; Codex cannot, because its
-config is TOML:
+The official [Linear MCP server](https://linear.app/docs/mcp) is configured at
+`https://mcp.linear.app/mcp` using Streamable HTTP. Each harness uses its native
+remote transport; no API key or `mcp-remote` bridge is needed.
 
-| Agent | Surface | Why |
-| --- | --- | --- |
-| Claude Code | `~/.claude/skills/mcp-servers/.mcp.json` | A directory under `~/.claude/skills/` holding a `.claude-plugin/plugin.json` loads automatically — personal scope, every project, no marketplace, install step, or trust gate. `mcpServers` is not a valid key in `settings.json`, and user scope lives in `~/.claude.json`, which is mutable state Home Manager must not own. |
-| OpenCode | `~/.config/opencode/opencode.json` | The global server config is entirely Nix-generated, while terminal client settings such as the theme live in `~/.config/opencode/cli.json`, which opencode writes itself and Home Manager leaves alone. |
-| Codex | `-c mcp_servers.<name>.url=…` in the wrapper | Config is TOML, and `~/.codex/config.toml` is mutable state — it records per-project `trust_level` decisions. Owning it would wipe them. |
+| Agent | Global configuration surface |
+| --- | --- |
+| Claude Code | `~/.claude/skills/mcp-servers/.mcp.json`, loaded as the personal `mcp-servers` skills-directory plugin |
+| Codex | `-c mcp_servers.<name>.url=…` in the wrapper; its mutable `~/.codex/config.toml` stays writable |
+| OpenCode (v2) | `~/.config/opencode/opencode.json`, under `mcp.servers` |
+| Kilo | `~/.config/kilo/kilo.json`, under `mcp` |
+| Kiro | `~/.kiro/settings/mcp.json`, under `mcpServers` |
+| Pi | `~/.pi/agent/mcp.json`, under `mcpServers` (built-in MCP support in the current `@earendil-works/pi-coding-agent`) |
+| Antigravity CLI | `~/.gemini/config/mcp_config.json`, under `mcpServers` with `serverUrl` |
 
-Authentication is deliberately **not** declarative. These servers use OAuth 2.1
-with dynamic client registration, and the Nix store is world-readable, so no
-token belongs in any file here. Each agent needs a one-time interactive login,
-after which tokens persist in that agent's own credential store:
+T3 Code uses the configuration of the underlying CLI agent. `agent-browser` is
+an automation tool, not an MCP client, so it needs no server configuration.
+
+Authentication is deliberately **not** declarative. The Nix store is
+world-readable, so no token belongs in any file here. Each harness requires a
+one-time browser-based OAuth login, with credentials stored outside these
+Home Manager files:
 
 ```bash
-claude mcp login linear      # or /mcp inside a session
-opencode mcp auth linear     # tokens: ~/.local/share/opencode/mcp-auth.json
-codex mcp login linear       # tokens: ~/.codex/auth.json
+# After rebuilding, authenticate the harnesses you use:
+codex mcp login linear
+opencode mcp auth linear
+kilo mcp auth linear
+pi mcp login linear
 ```
 
-Adding a server means one entry in `mcp-servers.nix` and a rebuild — all three
-agents pick it up.
+For Claude Code, open `/mcp` inside a session and authenticate the Linear server
+provided by the `mcp-servers` plugin (plugin server names are namespaced).
+For Kiro, use `/mcp` and its authentication action (`/mcp auth` to retry).
+For Antigravity, use `/mcp` and follow the server's authorization prompt.
+
+Adding a server means one entry in `mcp-servers.nix` and a rebuild — all seven
+harnesses consume the shared list. Home Manager owns the generated JSON files;
+make server changes here, rather than using CLI add/remove commands or UI
+config editing on those files. OAuth login remains interactive and writable.
+If a target file already exists outside Home Manager, merge its custom entries
+into the Nix configuration and move the old file aside before activating;
+these new declarations deliberately do not force-overwrite existing files.
 
 ## NAS mount (`modules/core/nas-mount.nix`, `modules/core/samba.nix`)
 
