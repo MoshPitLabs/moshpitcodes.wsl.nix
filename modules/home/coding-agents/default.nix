@@ -16,6 +16,7 @@ in
 {
   imports = [
     ./agent-browser.nix
+    ./antigravity.nix
     ./claude-code.nix
     ./codex.nix
     ./kilo-code.nix
