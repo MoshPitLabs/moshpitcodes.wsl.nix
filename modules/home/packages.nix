@@ -67,6 +67,7 @@
       nix-tree
       nix-diff
       comma
+      herdr
 
       # Custom CLI overlays (see overlays/).
       sidecar
