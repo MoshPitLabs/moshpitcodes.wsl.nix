@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
-# Claude Code status line: model | repo:branch* or path | context | cost | +/- lines
+# Claude Code status line: [agent ·] model | repo:branch* or path | context | cost | +/- lines
 input=$(cat)
 
 j() { jq -r "$1 // empty" <<<"$input"; }
 
 model=$(j '.model.display_name')
+# Main-session agent (settings "agent" or --agent). The model is always the main
+# session's, even while a subagent's view is open, so name whose model it is.
+agent=$(j '.agent.name')
 cwd=$(j '.workspace.current_dir')
 [ -z "$cwd" ] && cwd=$(j '.cwd')
 cost=$(j '.cost.total_cost_usd')
@@ -32,7 +35,9 @@ else
   loc="${BLU}${cwd/#$HOME/\~}${R}"
 fi
 
-out="${CYAN}${model:-?}${R}"
+out=""
+[ -n "$agent" ] && out+="${YEL}${agent}${DIM} · ${R}"
+out+="${CYAN}${model:-?}${R}"
 [ -n "$style" ] && [ "$style" != "default" ] && out+="${DIM} (${style})${R}"
 out+="${SEP}${loc}"
 

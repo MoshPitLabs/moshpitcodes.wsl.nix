@@ -25,7 +25,7 @@ let
   # the one fully declarative global surface for MCP in Claude Code.
   pluginDir = ".claude/skills/mcp-servers";
 
-  # Status line for every project: model | repo:branch* or path | context | cost | +/- lines.
+  # Status line for every project: [agent ·] model | repo:branch* or path | context | cost | +/- lines.
   statusline = pkgs.writeShellScript "claude-statusline" ''
     export PATH=${
       lib.makeBinPath [
