@@ -2,7 +2,6 @@
 {
   home.packages = with pkgs; [
     ansible
-    azure-cli
     bun
     cilium-cli
     devenv

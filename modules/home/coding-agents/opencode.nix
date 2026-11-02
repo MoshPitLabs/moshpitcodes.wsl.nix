@@ -2,6 +2,7 @@
 { pkgs, lib, ... }:
 let
   mcpServers = import ./mcp-servers.nix;
+  mcpStdioServers = import ./mcp-stdio-servers.nix;
 
   opencode = pkgs.writeShellScriptBin "opencode" ''
     exec ${pkgs.nodejs}/bin/npx -y @opencode/cli@2 "$@"
@@ -31,11 +32,17 @@ in
 
       # opencode speaks streamable HTTP natively and handles the OAuth dance
       # itself (dynamic client registration), so no credentials belong here.
-      mcp.servers = lib.mapAttrs (_: server: {
-        type = "remote";
-        inherit (server) url;
-        disabled = false;
-      }) mcpServers;
+      mcp.servers =
+        lib.mapAttrs (_: server: {
+          type = "remote";
+          inherit (server) url;
+          disabled = false;
+        }) mcpServers
+        // lib.mapAttrs (_: server: {
+          type = "local";
+          command = [ server.command ] ++ server.args;
+          disabled = false;
+        }) mcpStdioServers;
     };
   };
 

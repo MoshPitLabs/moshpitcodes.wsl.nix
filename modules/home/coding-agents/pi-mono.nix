@@ -3,9 +3,10 @@
 # via npx -y so it always resolves the latest release without a network fetch
 # at activation time or a separate ~/.npm-global prefix. OPENAI_API_KEY is
 # provided by coding-agents/default.nix.
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 let
   mcpServers = import ./mcp-servers.nix;
+  mcpStdioServers = import ./mcp-stdio-servers.nix;
 
   pi = pkgs.writeShellScriptBin "pi" ''
     exec ${pkgs.nodejs}/bin/npx -y @earendil-works/pi-coding-agent@latest "$@"
@@ -24,7 +25,9 @@ in
     file.".pi/agent/.gitkeep".text = "";
     # Current Pi has built-in Streamable HTTP and OAuth support.
     file.".pi/agent/mcp.json".text = builtins.toJSON {
-      inherit mcpServers;
+      # A `command` implies stdio; `command` is a single executable, `args` its arguments.
+      mcpServers =
+        mcpServers // lib.mapAttrs (_: server: { inherit (server) command args; }) mcpStdioServers;
     };
   };
 

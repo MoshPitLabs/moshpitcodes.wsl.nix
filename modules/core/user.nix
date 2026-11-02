@@ -7,6 +7,9 @@
     isNormalUser = true;
     home = "/home/${username}";
     shell = pkgs.zsh;
+    # Start the user systemd manager at boot (not on first login) so user
+    # services like t3 are up whenever the distro is.
+    linger = true;
     extraGroups = [
       "wheel"
       "docker"

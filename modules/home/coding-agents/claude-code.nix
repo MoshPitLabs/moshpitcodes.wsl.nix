@@ -2,8 +2,18 @@
 { pkgs, lib, ... }:
 let
   mcpServers = import ./mcp-servers.nix;
+  mcpStdioServers = import ./mcp-stdio-servers.nix;
+  otel = import ./otel.nix;
 
+  # bubblewrap and socat must be on PATH for Claude Code's sandbox (the
+  # `sandbox` block in settings.json below); nix does not put them there.
   claude = pkgs.writeShellScriptBin "claude" ''
+    export PATH=${
+      lib.makeBinPath [
+        pkgs.bubblewrap
+        pkgs.socat
+      ]
+    }:$PATH
     exec ${pkgs.nodejs}/bin/npx -y @anthropic-ai/claude-code@latest "$@"
   '';
 
@@ -16,7 +26,7 @@ let
   # the one fully declarative global surface for MCP in Claude Code.
   pluginDir = ".claude/skills/mcp-servers";
 
-  # Status line for every project: model | repo:branch* or path | context | cost | +/- lines.
+  # Status line for every project: [agent ·] model | repo:branch* or path | context | cost | +/- lines.
   statusline = pkgs.writeShellScript "claude-statusline" ''
     export PATH=${
       lib.makeBinPath [
@@ -58,10 +68,32 @@ in
               "Edit(**/credentials.json)"
             ];
           };
+          # Bash runs inside bubblewrap and is auto-approved while confined.
+          # allowUnsandboxedCommands keeps the escape hatch for commands that
+          # cannot run confined; using it still goes through a permission prompt.
+          sandbox = {
+            enabled = true;
+            autoAllowBashIfSandboxed = true;
+            allowUnsandboxedCommands = true;
+          };
           statusLine = {
             type = "command";
             command = "${statusline}";
             padding = 0;
+          };
+          # OpenTelemetry -> infra-01 (see otel.nix). Session and account labels
+          # are off to keep Prometheus cardinality flat; the collector sums the
+          # delta counters. CLAUDE_CODE_DISABLE_TELEMETRY (below) only opts out
+          # of Anthropic's own telemetry and does not affect OTLP export.
+          env = {
+            CLAUDE_CODE_ENABLE_TELEMETRY = "1";
+            OTEL_METRICS_EXPORTER = "otlp";
+            OTEL_LOGS_EXPORTER = "otlp";
+            OTEL_EXPORTER_OTLP_PROTOCOL = "http/protobuf";
+            OTEL_EXPORTER_OTLP_ENDPOINT = otel.endpoint;
+            OTEL_RESOURCE_ATTRIBUTES = "host.name=${otel.hostName}";
+            OTEL_METRICS_INCLUDE_SESSION_ID = "false";
+            OTEL_METRICS_INCLUDE_ACCOUNT_UUID = "false";
           };
         };
       };
@@ -74,10 +106,13 @@ in
       };
 
       "${pluginDir}/.mcp.json".text = builtins.toJSON {
-        mcpServers = lib.mapAttrs (_: server: {
-          type = "http";
-          inherit (server) url;
-        }) mcpServers;
+        mcpServers =
+          lib.mapAttrs (_: server: {
+            type = "http";
+            inherit (server) url;
+          }) mcpServers
+          # An entry with `command` and no `type` is read as stdio.
+          // lib.mapAttrs (_: server: { inherit (server) command args; }) mcpStdioServers;
       };
     };
 
