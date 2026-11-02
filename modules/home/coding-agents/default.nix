@@ -19,6 +19,7 @@ in
     ./antigravity.nix
     ./claude-code.nix
     ./codex.nix
+    ./grok.nix
     ./kilo-code.nix
     ./kiro-code.nix
     ./opencode.nix
