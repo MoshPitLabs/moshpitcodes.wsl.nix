@@ -146,12 +146,34 @@ For Kiro, use `/mcp` and its authentication action (`/mcp auth` to retry).
 For Antigravity, use `/mcp` and follow the server's authorization prompt.
 
 Adding a server means one entry in `mcp-servers.nix` and a rebuild — all seven
-harnesses consume the shared list. Home Manager owns the generated JSON files;
-make server changes here, rather than using CLI add/remove commands or UI
+harnesses consume the shared list (stdio servers go in `mcp-stdio-servers.nix`
+instead and reach six agents, not Kiro). Home Manager owns the generated JSON
+files; make server changes here, rather than using CLI add/remove commands or UI
 config editing on those files. OAuth login remains interactive and writable.
 If a target file already exists outside Home Manager, merge its custom entries
 into the Nix configuration and move the old file aside before activating;
 these new declarations deliberately do not force-overwrite existing files.
+
+#### Unity MCP (stdio, Windows host)
+
+`coding-agents/mcp-stdio-servers.nix` holds local-process (stdio) servers as
+`{ command, args }` data, rendered by Claude Code, Codex, OpenCode, Kilo, Pi and
+Antigravity. It declares `unity-mcp`, the relay from the Unity Editor package
+`com.unity.ai.assistant` 2.0, launched through WSL interop as
+`/mnt/c/Users/moshpit/.unity/relay/relay_win.exe --mcp`. Nix does not install
+it: the Unity Editor generates the relay, so the entry fails to start until the
+Editor has run once. Change the Windows account name in the data file if it is
+not `moshpit`. No credentials are involved; approve each new client in Unity
+under Project Settings > AI > Unity MCP > Pending Connections.
+
+Unity tools act as the Windows user outside the agent sandboxes, so keep
+per-tool approval on and disable unneeded Unity tools (script editing, command
+execution) in Project Settings > AI > Unity MCP; Codex is configured to always
+prompt, while OpenCode and Kilo do not prompt by default. The tools only work
+while the Unity Editor is open and its MCP bridge shows Running, not just after
+the Editor has generated the relay once. The relay is installed and updated by
+Unity, is not pinned by Nix, and its Authenticode signature is worth checking
+once.
 
 ## NAS mount (`modules/core/nas-mount.nix`, `modules/core/samba.nix`)
 

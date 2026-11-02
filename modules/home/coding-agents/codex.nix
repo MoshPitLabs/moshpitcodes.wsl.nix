@@ -1,6 +1,7 @@
 { pkgs, lib, ... }:
 let
   mcpServers = import ./mcp-servers.nix;
+  mcpStdioServers = import ./mcp-stdio-servers.nix;
   otel = import ./otel.nix;
 
   # Codex config is TOML, and ~/.codex/config.toml is mutable state: it records
@@ -11,6 +12,17 @@ let
   # not in config.toml.
   mcpArgs = lib.concatStringsSep " " (
     lib.mapAttrsToList (name: server: "-c 'mcp_servers.${name}.url=\"${server.url}\"'") mcpServers
+    # Stdio servers: `-c` values are TOML, and a JSON string or string array is
+    # valid TOML. escapeShellArg quotes the whole override for the wrapper.
+    # Stdio servers run outside the Codex sandbox as the host user, so their
+    # tools always require approval.
+    ++ lib.concatLists (
+      lib.mapAttrsToList (name: server: [
+        "-c ${lib.escapeShellArg "mcp_servers.${name}.command=${builtins.toJSON server.command}"}"
+        "-c ${lib.escapeShellArg "mcp_servers.${name}.args=${builtins.toJSON server.args}"}"
+        "-c ${lib.escapeShellArg "mcp_servers.${name}.default_tools_approval_mode=\"prompt\""}"
+      ]) mcpStdioServers
+    )
   );
 
   # Telemetry (see otel.nix) is injected the same way, for the same reason:

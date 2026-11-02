@@ -2,6 +2,7 @@
 { pkgs, lib, ... }:
 let
   mcpServers = import ./mcp-servers.nix;
+  mcpStdioServers = import ./mcp-stdio-servers.nix;
   otel = import ./otel.nix;
 
   # bubblewrap and socat must be on PATH for Claude Code's sandbox (the
@@ -105,10 +106,13 @@ in
       };
 
       "${pluginDir}/.mcp.json".text = builtins.toJSON {
-        mcpServers = lib.mapAttrs (_: server: {
-          type = "http";
-          inherit (server) url;
-        }) mcpServers;
+        mcpServers =
+          lib.mapAttrs (_: server: {
+            type = "http";
+            inherit (server) url;
+          }) mcpServers
+          # An entry with `command` and no `type` is read as stdio.
+          // lib.mapAttrs (_: server: { inherit (server) command args; }) mcpStdioServers;
       };
     };
 

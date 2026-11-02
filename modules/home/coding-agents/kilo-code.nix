@@ -1,6 +1,7 @@
 { pkgs, lib, ... }:
 let
   mcpServers = import ./mcp-servers.nix;
+  mcpStdioServers = import ./mcp-stdio-servers.nix;
 
   kilo = pkgs.writeShellScriptBin "kilo" ''
     exec ${pkgs.nodejs}/bin/npx -y @kilocode/cli "$@"
@@ -12,11 +13,17 @@ in
     file = {
       ".config/kilo/.gitkeep".text = "";
       ".config/kilo/kilo.json".text = builtins.toJSON {
-        mcp = lib.mapAttrs (_: server: {
-          type = "remote";
-          inherit (server) url;
-          enabled = true;
-        }) mcpServers;
+        mcp =
+          lib.mapAttrs (_: server: {
+            type = "remote";
+            inherit (server) url;
+            enabled = true;
+          }) mcpServers
+          // lib.mapAttrs (_: server: {
+            type = "local";
+            command = [ server.command ] ++ server.args;
+            enabled = true;
+          }) mcpStdioServers;
       };
     };
   };
