@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 {
   home.packages = with pkgs; [
     ansible
@@ -22,6 +22,8 @@
     nix-output-monitor
     nix-prefetch-github
     nodejs
+    # npm 12 wins over the npm 11 bundled in pkgs.nodejs (see overlays/npm.nix).
+    (lib.hiPrio npm12)
     nvd
     pnpm
     postgresql
